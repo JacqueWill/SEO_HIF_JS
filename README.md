@@ -4,7 +4,7 @@ SEO_HIF_JS is a search engine optimization (SEO) tool that takes into account hu
 
 ## Usage
 
-To use the SEO_HIF_JS tool, you will need to download the repository and host it on a web server. Once hosted, you can access the tool by navigating to the hosted URL in your web browser.
+To use the SEO_HIF_JS tool, you will need to download the repository. Once downloaded, you can access the tool by opening the HTML page in your web browser.
 
 When you enter a search query, the tool will retrieve search results and display them on the page. When you click on a search result, the tool will record the click as implicit feedback and use it to improve future search rankings.
 
