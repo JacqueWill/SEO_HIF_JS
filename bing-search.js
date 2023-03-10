@@ -63,17 +63,7 @@ function searchBingApi(searchTerm) {
       // Update pagination
       updatePagination();
 
-      // Count clicks on hyperlinks
-      const hyperlinks = document.querySelectorAll('#search-results a');
-      hyperlinks.forEach(hyperlink => {
-        hyperlink.addEventListener('click', () => {
-          const clickedUrl = hyperlink.href;
-          console.log(`Clicked hyperlink with URL: ${clickedUrl}`);
-          // Include all clicked urls into a single array
-          clickedUrls = clickedUrls.concat(clickedUrl)
-          console.log(clickedUrls)
-        });
-      });
+      
 
     }else{
       searchBingApi(searchForm.elements['search-term'].value);
@@ -123,6 +113,18 @@ function displaySearchResults() {
   });
   searchResults.innerHTML = html;
   console.log("Search Results slice displayed for page",currentPage)
+
+  // Count clicks on hyperlinks
+  const hyperlinks = document.querySelectorAll('#search-results a');
+  hyperlinks.forEach(hyperlink => {
+    hyperlink.addEventListener('click', () => {
+      const clickedUrl = hyperlink.href;
+      console.log(`Clicked hyperlink with URL: ${clickedUrl}`);
+      // Include all clicked urls into a single array
+      clickedUrls = clickedUrls.concat(clickedUrl)
+      console.log(clickedUrls)
+    });
+  });
 }
 
 // Function to update pagination and navigation
