@@ -36,14 +36,14 @@ function searchBingApi(searchTerm) {
     return response.json();
   })
   .then(data => {
-    totalResults = data.webPages.totalEstimatedMatches;
+    totalResults = Object.keys(data.webPages.value).length;
     totalPages = Math.ceil(totalResults / 10);
 
     searchResultsData = data.webPages.value;
 
-    
+
     console.log("Results acquired")
-    console.log(searchResultsData)
+    console.log(data)
 
     // Display search results for first page
     displaySearchResults();
