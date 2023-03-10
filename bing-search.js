@@ -12,6 +12,8 @@ let totalResults = 0;
 let totalPages = 0;
 let currentOffset = 0;
 let searchResultsData = [];
+let newSearchResultsData =[];
+let previousTotalResults = 0;
 
 searchForm.addEventListener('submit', event => {
   event.preventDefault();
@@ -22,7 +24,8 @@ searchForm.addEventListener('submit', event => {
 });
 
 function searchBingApi(searchTerm) {
-  const apiUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchTerm)}&count=1000`;
+
+  const apiUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchTerm)}&count=100&offset=${previousTotalResults}`;
 
   fetch(apiUrl, {
     headers: {
@@ -37,18 +40,28 @@ function searchBingApi(searchTerm) {
   })
   .then(data => {
     totalResults = Object.keys(data.webPages.value).length;
+
+    previousTotalResults = previousTotalResults + totalResults;
+    newSearchResultsData = data.webPages.value;
+    console.log(typeof newSearchResultsData)
+
+    searchResultsData = searchResultsData.concat(newSearchResultsData);
+
+    console.log(searchResultsData);
+
+    if(previousTotalResults>=100){
+      // Display search results for first page
+      displaySearchResults();
+      // Update pagination
+      updatePagination();
+    }else{
+      searchBingApi(searchForm.elements['search-term'].value);
+    }
+
+    console.log("Results acquired, Number of results - ",totalResults);
+
+    totalResults = Object.keys(searchResultsData).length;
     totalPages = Math.ceil(totalResults / 10);
-
-    searchResultsData = data.webPages.value;
-
-
-    console.log("Results acquired")
-    console.log(data)
-
-    // Display search results for first page
-    displaySearchResults();
-    // Update pagination
-    updatePagination();
   })
   .catch(error => {
     console.error(error);
