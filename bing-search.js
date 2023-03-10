@@ -11,6 +11,7 @@ let currentPage = 1;
 let totalResults = 0;
 let totalPages = 0;
 let currentOffset = 0;
+let searchResultsData = [];
 
 searchForm.addEventListener('submit', event => {
   event.preventDefault();
@@ -21,7 +22,7 @@ searchForm.addEventListener('submit', event => {
 });
 
 function searchBingApi(searchTerm) {
-    const apiUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchTerm)}&count=10&offset=${currentOffset}`;
+  const apiUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchTerm)}&count=1000`;
 
   fetch(apiUrl, {
     headers: {
@@ -38,19 +39,14 @@ function searchBingApi(searchTerm) {
     totalResults = data.webPages.totalEstimatedMatches;
     totalPages = Math.ceil(totalResults / 10);
 
-    const results = data.webPages.value;
-    let html = '';
-    results.forEach(result => {
-      html += `
-        <article>
-          <h2><a href="${result.url}">${result.name}</a></h2>
-          <p><a href="${result.url}">${result.url}</a></p>
-          <p>${result.snippet}</p>
-        </article>
-      `;
-    });
-    searchResults.innerHTML = html;
+    searchResultsData = data.webPages.value;
 
+    
+    console.log("Results acquired")
+    console.log(searchResultsData)
+
+    // Display search results for first page
+    displaySearchResults();
     // Update pagination
     updatePagination();
   })
@@ -62,14 +58,35 @@ function searchBingApi(searchTerm) {
 prevPageButton.addEventListener('click', () => {
   currentOffset -= 10;
   currentPage--;
-  searchBingApi(searchForm.elements['search-term'].value);
+  displaySearchResults();
+  updatePagination();
 });
 
 nextPageButton.addEventListener('click', () => {
   currentOffset += 10;
   currentPage++;
-  searchBingApi(searchForm.elements['search-term'].value);
+  displaySearchResults();
+  updatePagination();
 });
+
+function displaySearchResults() {
+  const startIndex = (currentPage - 1) * 10;
+  const endIndex = startIndex + 10;
+  const resultsToDisplay = searchResultsData.slice(startIndex, endIndex);
+
+  let html = '';
+  resultsToDisplay.forEach(result => {
+    html += `
+      <article>
+        <h2><a href="${result.url}">${result.name}</a></h2>
+        <p><a href="${result.url}">${result.url}</a></p>
+        <p>${result.snippet}</p>
+      </article>
+    `;
+  });
+  searchResults.innerHTML = html;
+  console.log("Search Results slice displayed for page",currentPage)
+}
 
 function updatePagination() {
   pageNumber.textContent = currentPage;
@@ -86,6 +103,5 @@ function updatePagination() {
   } else {
     nextPageButton.disabled = false;
   }
+  console.log("Pagination Updated for page",currentPage)
 }
-
-
