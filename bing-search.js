@@ -8,6 +8,8 @@ const nextPageButton = document.querySelector('#next-page');
 const pageNumber = document.querySelector('#page-number');
 const totalPageCount = document.querySelector('#total-pages');
 
+// require("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js");
+
 // Declare and initialize variables
 let currentPage = 1;
 let totalResults = 0;
@@ -17,6 +19,12 @@ let searchResultsData = [];
 let newSearchResultsData =[];
 let previousTotalResults = 0;
 let clickedUrls = [];
+
+// jQuery(document).ready(function(){
+//   $.getScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js');
+// });
+
+
 
 // Event listener for search form submit
 searchForm.addEventListener('submit', event => {
@@ -63,13 +71,15 @@ function searchBingApi(searchTerm) {
       // Update pagination
       updatePagination();
 
-      
+      preprocessing(searchResultsData);
+
+      // newSearchResultsData = searchResultsData
 
     }else{
       searchBingApi(searchForm.elements['search-term'].value);
     }
 
-    console.log("Results acquired, Number of results - ",totalResults);
+    // console.log("Results acquired, Number of results - ",totalResults);
 
     // Calculate total pages
     totalResults = Object.keys(searchResultsData).length;
@@ -79,6 +89,51 @@ function searchBingApi(searchTerm) {
     console.error(error);
   });
 }
+
+
+// // Load the Universal Sentence Encoder model
+// async function loadModel() {
+//   const model =  tf.loadGraphModel('https://tfhub.dev/google/universal-sentence-encoder/4/model.json');
+//   return model;
+// }
+
+// // Use the model to encode a sentence
+// async function encodeSentence(sentence) {
+//   const model =  loadModel();
+//   const embeddings = model.execute([sentence]);
+//   const encoding = embeddings[0].arraySync()[0];
+//   return encoding;
+// }
+
+// // Example usage
+// const sentence = "The quick brown fox jumps over the lazy dog.";
+// const encoding =  encodeSentence(sentence);
+// console.log(encoding);
+
+
+function clearText(text) {
+    return text
+      .toLowerCase()
+      .replace(/[^A-Za-zА-Яа-яЁёЇїІіҐґЄє0-9\-]|\s]/g, " ")
+      .replace(/\s{2,}/g, " ");
+  }
+
+function preprocessing(searchResultsData) {
+  searchResultsData.forEach(result =>{
+    // console.log(result.snippet);
+    result.preprocessedResults = clearText(result.snippet);
+  })
+  console.log("Preprocessed text snippets")
+  console.log(searchResultsData)
+}
+
+
+
+
+
+
+
+
 
 // Event listener for previous page button
 prevPageButton.addEventListener('click', () => {
@@ -92,8 +147,16 @@ prevPageButton.addEventListener('click', () => {
 nextPageButton.addEventListener('click', () => {
   currentOffset += 10;
   currentPage++;
+
+  // Retrain your model and rerank the results
+
+
   displaySearchResults();
   updatePagination();
+
+
+
+
 });
 
 // Function to display search results for current page
@@ -112,7 +175,7 @@ function displaySearchResults() {
     `;
   });
   searchResults.innerHTML = html;
-  console.log("Search Results slice displayed for page",currentPage)
+  // console.log("Search Results slice displayed for page",currentPage)
 
   // Count clicks on hyperlinks
   const hyperlinks = document.querySelectorAll('#search-results a');
@@ -122,7 +185,7 @@ function displaySearchResults() {
       console.log(`Clicked hyperlink with URL: ${clickedUrl}`);
       // Include all clicked urls into a single array
       clickedUrls = clickedUrls.concat(clickedUrl)
-      console.log(clickedUrls)
+      // console.log(clickedUrls)
     });
   });
 }
@@ -143,5 +206,5 @@ function updatePagination() {
   } else {
     nextPageButton.disabled = false;
   }
-  console.log("Pagination Updated for page",currentPage)
+  // console.log("Pagination Updated for page",currentPage)
 }
