@@ -8,12 +8,6 @@ const nextPageButton = document.querySelector('#next-page');
 const pageNumber = document.querySelector('#page-number');
 const totalPageCount = document.querySelector('#total-pages');
 
-// require("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js");
-
-// var natural = import(natural);
-// var TfIdf = natural.TfIdf;
-// var tfidf = new TfIdf();
-
 // Declare and initialize variables
 let currentPage = 1;
 let totalResults = 0;
@@ -27,14 +21,9 @@ let stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','you
 let corpus = [];
 
 
-// jQuery(document).ready(function(){
-//   $.getScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js');
-// });
-
-
-
 // Event listener for search form submit
 searchForm.addEventListener('submit', event => {
+  // location.reload(true);
   event.preventDefault();
   const searchTerm = searchForm.elements['search-term'].value;
   currentOffset = 0;
@@ -46,7 +35,7 @@ searchForm.addEventListener('submit', event => {
 function searchBingApi(searchTerm) {
 
   // Construct API URL with search term and offset
-  const apiUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchTerm)}&count=100&offset=${previousTotalResults}`;
+  const apiUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchTerm)}&count=50&offset=${previousTotalResults}`;
 
   // Fetch data from API
   fetch(apiUrl, {
@@ -66,30 +55,22 @@ function searchBingApi(searchTerm) {
 
     previousTotalResults = previousTotalResults + totalResults;
     newSearchResultsData = data.webPages.value;
-    //console.log(typeof newSearchResultsData)
-
     searchResultsData = searchResultsData.concat(newSearchResultsData);
 
-    //console.log(searchResultsData);
-
-    if(previousTotalResults>=100){
+    if(previousTotalResults>=120){
       // Display search results for first page
       displaySearchResults();
       // Update pagination
       updatePagination();
-
+      
+      // setTimeout(() => {console.log("Delayed for 0.01 second.");}, "10");
       preprocessing(searchResultsData);
-      console.log(corpus);
       tf_idfVectorizer(corpus, searchResultsData);
-
-      // newSearchResultsData = searchResultsData
-
     }else{
+      // setTimeout(() => {console.log("Delayed for 0.5 second.");}, "501");
       searchBingApi(searchForm.elements['search-term'].value);
     }
-
-    // console.log("Results acquired, Number of results - ",totalResults);
-
+    console.log("Results acquired, Number of results - ",totalResults);
     // Calculate total pages
     totalResults = Object.keys(searchResultsData).length;
     totalPages = Math.ceil(totalResults / 10);
@@ -99,25 +80,86 @@ function searchBingApi(searchTerm) {
   });
 }
 
+// Event listener for previous page button
+prevPageButton.addEventListener('click', () => {
+  currentOffset -= 10;
+  currentPage--;
+  displaySearchResults();
+  updatePagination();
+});
 
-// // Load the Universal Sentence Encoder model
-// async function loadModel() {
-//   const model =  tf.loadGraphModel('https://tfhub.dev/google/universal-sentence-encoder/4/model.json');
-//   return model;
-// }
+// Event listener for next page button
+nextPageButton.addEventListener('click', () => {
+  currentOffset += 10;
+  currentPage++;
 
-// // Use the model to encode a sentence
-// async function encodeSentence(sentence) {
-//   const model =  loadModel();
-//   const embeddings = model.execute([sentence]);
-//   const encoding = embeddings[0].arraySync()[0];
-//   return encoding;
-// }
+  // Attach labels to clicked urls
+  
 
-// // Example usage
-// const sentence = "The quick brown fox jumps over the lazy dog.";
-// const encoding =  encodeSentence(sentence);
-// console.log(encoding);
+
+  // Retrain your model and rerank the results
+
+  displaySearchResults();
+  updatePagination();
+
+});
+
+// Function to display search results for current page
+function displaySearchResults() {
+  const startIndex = (currentPage - 1) * 10;
+  const endIndex = startIndex + 10;
+  const resultsToDisplay = searchResultsData.slice(startIndex, endIndex);
+
+  let html = '';
+  resultsToDisplay.forEach(result => {
+    html += `
+      <article>
+        <h2><a href="${result.url}" target ="_blank">${result.name}</a></h2>
+        <p>${result.snippet}</p>
+      </article>
+    `;
+  });
+  searchResults.innerHTML = html;
+  console.log("Search Results slice displayed for page",currentPage)
+
+  // Count clicks on hyperlinks
+  const hyperlinks = document.querySelectorAll('#search-results a');
+  hyperlinks.forEach(hyperlink => {
+    hyperlink.addEventListener('click', () => {
+      const clickedUrl = hyperlink.href;
+      console.log(`Clicked hyperlink with URL: ${clickedUrl}`);
+
+      // Adding number of clicks to the data
+      searchResultsData = searchResultsData.map(obj =>{
+        if(obj.url == clickedUrl){
+          obj.clicks++;
+          console.log('Click acknowledged')
+        }
+        return obj;
+      })
+      console.log(searchResultsData)
+    });
+  });
+}
+
+// Function to update pagination and navigation
+function updatePagination() {
+  pageNumber.textContent = currentPage;
+  totalPageCount.textContent = totalPages;
+
+  if (currentPage === 1) {
+    prevPageButton.disabled = true;
+  } else {
+    prevPageButton.disabled = false;
+  }
+
+  if (currentPage === totalPages) {
+    nextPageButton.disabled = true;
+  } else {
+    nextPageButton.disabled = false;
+  }
+  console.log("Pagination Updated for page",currentPage)
+}
 
 
 function clearText(text) {
@@ -145,41 +187,17 @@ function tokenizer(text){
 
 function preprocessing(searchResultsData) {
   searchResultsData.forEach(result =>{
-    // console.log(result.snippet);
     preprocessedResult = clearText(result.snippet);
     preprocessedResult = removeStopwords(preprocessedResult);
     preprocessedResult = tokenizer(preprocessedResult);
     result.preprocessedResults = preprocessedResult
     result.vectors = [];
-    corpus.push(preprocessedResult)
+    result.clicks = 0;
+    corpus.push(preprocessedResult);
   })
   
-  console.log("Preprocessed text snippets")
-  // console.log(corpus)
+  console.log("Preprocessed text snippets");
 }
-
-
-// function tfidf(corpus, term) {
-//   // Compute the term frequency (TF) and inverse document frequency (IDF) for the given term in each document
-//   const tfidfScores = corpus.map((doc) => {
-//     const tf = doc.filter((word) => word === term).length / doc.length;
-//     const idf = Math.log(docs.length / docs.filter((doc) => doc.includes(term)).length);
-//     return tf * idf;
-//   });
-  
-//   // Return the TF-IDF score for the term across all documents
-//   return tfidfScores.reduce((sum, score) => sum + score, 0) / tfidfScores.length;
-// }
-
-// function tf_idfVectorizer(){
-//   searchResultsData.forEach(result =>{
-//     result.preprocessedResults.forEach(text =>{
-//       result.vectors.push(tfidf(corpus, text));
-//     })
-//   })
-//   console.log(searchResultsData)
-// }
-
 
 function tfidf(corpus, term) {
   // Compute the term frequency (TF) and inverse document frequency (IDF) for the given term in each document
@@ -199,84 +217,5 @@ function tf_idfVectorizer(corpus, searchResultsData){
       result.vectors.push(tfidf(corpus, text));
     })
   })
-  console.log(searchResultsData)
 }
 
-
-
-
-
-
-// Event listener for previous page button
-prevPageButton.addEventListener('click', () => {
-  currentOffset -= 10;
-  currentPage--;
-  displaySearchResults();
-  updatePagination();
-});
-
-// Event listener for next page button
-nextPageButton.addEventListener('click', () => {
-  currentOffset += 10;
-  currentPage++;
-
-  // Retrain your model and rerank the results
-
-
-  displaySearchResults();
-  updatePagination();
-
-
-
-
-});
-
-// Function to display search results for current page
-function displaySearchResults() {
-  const startIndex = (currentPage - 1) * 10;
-  const endIndex = startIndex + 10;
-  const resultsToDisplay = searchResultsData.slice(startIndex, endIndex);
-
-  let html = '';
-  resultsToDisplay.forEach(result => {
-    html += `
-      <article>
-        <h2><a href="${result.url}" target ="_blank">${result.name}</a></h2>
-        <p>${result.snippet}</p>
-      </article>
-    `;
-  });
-  searchResults.innerHTML = html;
-  // console.log("Search Results slice displayed for page",currentPage)
-
-  // Count clicks on hyperlinks
-  const hyperlinks = document.querySelectorAll('#search-results a');
-  hyperlinks.forEach(hyperlink => {
-    hyperlink.addEventListener('click', () => {
-      const clickedUrl = hyperlink.href;
-      console.log(`Clicked hyperlink with URL: ${clickedUrl}`);
-      // Include all clicked urls into a single array
-      clickedUrls = clickedUrls.concat(clickedUrl)
-      // console.log(clickedUrls)
-    });
-  });
-}
-
-// Function to update pagination and navigation
-function updatePagination() {
-  pageNumber.textContent = currentPage;
-  totalPageCount.textContent = totalPages;
-
-  if (currentPage === 1) {
-    prevPageButton.disabled = true;
-  } else {
-    prevPageButton.disabled = false;
-  }
-
-  if (currentPage === totalPages) {
-    nextPageButton.disabled = true;
-  } else {
-    nextPageButton.disabled = false;
-  }
-  // console.log("Pagination Updated for page",currentPage)
-}
