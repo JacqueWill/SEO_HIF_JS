@@ -14,12 +14,14 @@ let totalResults = 0;
 let totalPages = 0;
 let currentOffset = 0;
 let searchResultsData = [];
+let resultsToDisplay = [];
 let newSearchResultsData =[];
 let previousTotalResults = 0;
 let clickedUrls = [];
 let stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','your','yours','yourself','yourselves','he','him','his','himself','she','her','hers','herself','it','its','itself','they','them','their','theirs','themselves','what','which','who','whom','this','that','these','those','am','is','are','was','were','be','been','being','have','has','had','having','do','does','did','doing','a','an','the','and','but','if','or','because','as','until','while','of','at','by','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','then','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now'];
 let corpus = [];
-
+let trainData = [];
+let testData = [];
 
 // Event listener for search form submit
 searchForm.addEventListener('submit', event => {
@@ -57,7 +59,11 @@ function searchBingApi(searchTerm) {
     newSearchResultsData = data.webPages.value;
     searchResultsData = searchResultsData.concat(newSearchResultsData);
 
-    if(previousTotalResults>=120){
+    // //Test --------------------------------------------------------
+   
+    //Test end ----------------------------------------------------
+
+    if(previousTotalResults>=50){
       // Display search results for first page
       displaySearchResults();
       // Update pagination
@@ -70,6 +76,21 @@ function searchBingApi(searchTerm) {
       // setTimeout(() => {console.log("Delayed for 0.5 second.");}, "501");
       searchBingApi(searchForm.elements['search-term'].value);
     }
+
+    //Test ----------------------------------------------------------
+
+    // totalResults = Object.keys(searchResultsData).length;
+
+    // displaySearchResults();
+    // // Update pagination
+    // updatePagination();
+    
+    // // setTimeout(() => {console.log("Delayed for 0.01 second.");}, "10");
+    // preprocessing(searchResultsData);
+    // tf_idfVectorizer(corpus, searchResultsData);
+
+    //Test end -------------------------------------------------------
+
     console.log("Results acquired, Number of results - ",totalResults);
     // Calculate total pages
     totalResults = Object.keys(searchResultsData).length;
@@ -93,22 +114,40 @@ nextPageButton.addEventListener('click', () => {
   currentOffset += 10;
   currentPage++;
 
-  // Attach labels to clicked urls
-  
+  // If nothing is clicked
+  if(Object.keys(trainData).length == 0){
+    console.log("No Clicks recorded")
+    displaySearchResults();
+    updatePagination();
+  }else{
+    console.log("Updating ranks")
+    // Retrain your model and rerank the results
+    displaySearchResults();
+    updatePagination();
 
+    // Compute similarity scores for test data
+    for (let i = 0; i < testData.length; i++) {
+    testData[i].score = linearRegression(trainData);
+    }
+    // Sort test data based on similarity scores
+    testData.sort((a, b) => b.score - a.score);
 
-  // Retrain your model and rerank the results
-
-  displaySearchResults();
-  updatePagination();
-
+  }
 });
 
 // Function to display search results for current page
 function displaySearchResults() {
   const startIndex = (currentPage - 1) * 10;
   const endIndex = startIndex + 10;
-  const resultsToDisplay = searchResultsData.slice(startIndex, endIndex);
+  // If no results are clicked
+  if(Object.keys(trainData).length == 0){
+    console.log("No clicks recorded for display")
+    resultsToDisplay = searchResultsData.slice(startIndex, endIndex);
+  }else{
+    console.log("Fetching new ranked results")
+    resultsToDisplay = testData.slice(0,10);
+  }
+  testData = searchResultsData.slice(endIndex,);
 
   let html = '';
   resultsToDisplay.forEach(result => {
@@ -127,17 +166,16 @@ function displaySearchResults() {
   hyperlinks.forEach(hyperlink => {
     hyperlink.addEventListener('click', () => {
       const clickedUrl = hyperlink.href;
-      console.log(`Clicked hyperlink with URL: ${clickedUrl}`);
 
       // Adding number of clicks to the data
       searchResultsData = searchResultsData.map(obj =>{
         if(obj.url == clickedUrl){
           obj.clicks++;
-          console.log('Click acknowledged')
+          trainData.push(obj);
+          console.log('Click acknowledged',clickedUrl);
         }
         return obj;
       })
-      console.log(searchResultsData)
     });
   });
 }
@@ -218,4 +256,47 @@ function tf_idfVectorizer(corpus, searchResultsData){
     })
   })
 }
+
+function cosineSimilarity(v1, v2) {
+  let dotProduct = 0;
+  let v1Magnitude = 0;
+  let v2Magnitude = 0;
+  
+  for (let i = 0; i < v1.length; i++) {
+    dotProduct += v1[i] * v2[i];
+    v1Magnitude += v1[i] * v1[i];
+    v2Magnitude += v2[i] * v2[i];
+  }
+  
+  v1Magnitude = Math.sqrt(v1Magnitude);
+  v2Magnitude = Math.sqrt(v2Magnitude);
+  
+  return dotProduct / (v1Magnitude * v2Magnitude);
+}
+
+
+// Define a function for computing linear regression
+function linearRegression(trainData) {
+  let xSum = 0;
+  let ySum = 0;
+  let xySum = 0;
+  let xSquareSum = 0;
+  let n = trainData.length;
+  
+  for (let i = 0; i < n; i++) {
+    xSum += trainData[i].clicks;
+    ySum += cosineSimilarity(trainData[i].vectors, testData[0].vectors);
+    xySum += trainData[i].clicks * cosineSimilarity(trainData[i].vectors, testData[0].vectors);
+    xSquareSum += trainData[i].clicks * trainData[i].clicks;
+  }
+  
+  let slope = (n * xySum - xSum * ySum) / (n * xSquareSum - xSum * xSum);
+  let intercept = (ySum - slope * xSum) / n;
+  
+  return slope * testData[0].clicks + intercept;
+}
+
+
+
+
 
