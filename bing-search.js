@@ -18,8 +18,8 @@ let resultsToDisplay = [];
 let newSearchResultsData =[];
 let previousTotalResults = 0;
 let clickedUrls = [];
-let stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','your','yours','yourself','yourselves','he','him','his','himself','she','her','hers','herself','it','its','itself','they','them','their','theirs','themselves','what','which','who','whom','this','that','these','those','am','is','are','was','were','be','been','being','have','has','had','having','do','does','did','doing','a','an','the','and','but','if','or','because','as','until','while','of','at','by','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','then','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now'];
-let corpus = [];
+// let stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','your','yours','yourself','yourselves','he','him','his','himself','she','her','hers','herself','it','its','itself','they','them','their','theirs','themselves','what','which','who','whom','this','that','these','those','am','is','are','was','were','be','been','being','have','has','had','having','do','does','did','doing','a','an','the','and','but','if','or','because','as','until','while','of','at','by','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','then','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now'];
+// let corpus = [];
 let trainData = [];
 let testData = [];
 
@@ -32,6 +32,22 @@ searchForm.addEventListener('submit', event => {
   currentPage = 1;
   searchBingApi(searchTerm);
 });
+
+let preprocessing_worker = new Worker('preprocessing_worker.js');
+let embedding_worker = new Worker('embedding_worker.js');
+
+preprocessing_worker.addEventListener('message', event => {
+  searchResultsData = event.data;
+  displaySearchResults();
+  console.log('Preprocessing Worker acheived')
+  embedding_worker.postMessage([searchResultsData,corpus]);
+});
+
+embedding_worker.addEventListener('message', event => {
+  searchResultsData = event.data;
+  console.log('Embedding Worker acheived')
+});
+
 
 // Function to search Bing API
 function searchBingApi(searchTerm) {
@@ -59,37 +75,17 @@ function searchBingApi(searchTerm) {
     newSearchResultsData = data.webPages.value;
     searchResultsData = searchResultsData.concat(newSearchResultsData);
 
-    // //Test --------------------------------------------------------
-   
-    //Test end ----------------------------------------------------
-
     if(previousTotalResults>=50){
       // Display search results for first page
       displaySearchResults();
       // Update pagination
       updatePagination();
       
-      // setTimeout(() => {console.log("Delayed for 0.01 second.");}, "10");
-      preprocessing(searchResultsData);
-      tf_idfVectorizer(corpus, searchResultsData);
+      preprocessing_worker.postMessage(searchResultsData);
+
     }else{
-      // setTimeout(() => {console.log("Delayed for 0.5 second.");}, "501");
       searchBingApi(searchForm.elements['search-term'].value);
     }
-
-    //Test ----------------------------------------------------------
-
-    // totalResults = Object.keys(searchResultsData).length;
-
-    // displaySearchResults();
-    // // Update pagination
-    // updatePagination();
-    
-    // // setTimeout(() => {console.log("Delayed for 0.01 second.");}, "10");
-    // preprocessing(searchResultsData);
-    // tf_idfVectorizer(corpus, searchResultsData);
-
-    //Test end -------------------------------------------------------
 
     console.log("Results acquired, Number of results - ",totalResults);
     // Calculate total pages
@@ -200,42 +196,42 @@ function updatePagination() {
 }
 
 
-function clearText(text) {
-  return text
-    .toLowerCase()
-    .replace(/[^A-Za-zА-Яа-яЁёЇїІіҐґЄє0-9\-]|\s]/g, " ")
-    .replace(/\s{2,}/g, " ");
-}
+// function clearText(text) {
+//   return text
+//     .toLowerCase()
+//     .replace(/[^A-Za-zА-Яа-яЁёЇїІіҐґЄє0-9\-]|\s]/g, " ")
+//     .replace(/\s{2,}/g, " ");
+// }
 
-function removeStopwords(text){
-  res = []
-    words = text.split(' ')
-    for(let i=0;i<words.length;i++) {
-       word_clean = words[i].split(".").join("")
-       if(!stopwords.includes(word_clean)) {
-           res.push(word_clean)
-       }
-    }
-    return(res.join(' '))
-}
+// function removeStopwords(text){
+//   res = []
+//     words = text.split(' ')
+//     for(let i=0;i<words.length;i++) {
+//        word_clean = words[i].split(".").join("")
+//        if(!stopwords.includes(word_clean)) {
+//            res.push(word_clean)
+//        }
+//     }
+//     return(res.join(' '))
+// }
 
-function tokenizer(text){
-  return text.split(/\W+/);
-}
+// function tokenizer(text){
+//   return text.split(/\W+/);
+// }
 
-function preprocessing(searchResultsData) {
-  searchResultsData.forEach(result =>{
-    preprocessedResult = clearText(result.snippet);
-    preprocessedResult = removeStopwords(preprocessedResult);
-    preprocessedResult = tokenizer(preprocessedResult);
-    result.preprocessedResults = preprocessedResult
-    result.vectors = [];
-    result.clicks = 0;
-    corpus.push(preprocessedResult);
-  })
+// function preprocessing(searchResultsData) {
+//   searchResultsData.forEach(result =>{
+//     preprocessedResult = clearText(result.snippet);
+//     preprocessedResult = removeStopwords(preprocessedResult);
+//     preprocessedResult = tokenizer(preprocessedResult);
+//     result.preprocessedResults = preprocessedResult
+//     result.vectors = [];
+//     result.clicks = 0;
+//     corpus.push(preprocessedResult);
+//   })
   
-  console.log("Preprocessed text snippets");
-}
+//   console.log("Preprocessed text snippets");
+// }
 
 function tfidf(corpus, term) {
   // Compute the term frequency (TF) and inverse document frequency (IDF) for the given term in each document
