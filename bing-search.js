@@ -70,8 +70,7 @@ trainWorker.addEventListener('message', event=> {
 
 scoreWorker.addEventListener('message', event => {
   testData = event.data;
-  console.log(testData);
-  testData.sort((a, b) => b.score - a.score);
+  
   displaySearchResults();
   updatePagination();
 })

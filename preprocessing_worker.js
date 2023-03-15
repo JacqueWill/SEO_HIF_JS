@@ -2,6 +2,16 @@ let stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','you
 let corpus = [];
 const maxLength = 100;
 
+function removeDuplicates(searchResultsData){
+    const uniqueItems = searchResultsData.filter((item, index) => {
+        return index === searchResultsData.findIndex(obj => {
+          return obj.url === item.url;
+        });
+      });
+
+    return uniqueItems;
+}
+
 function clearText(text) {
     return text
       .toLowerCase()
@@ -31,6 +41,9 @@ function padding(preprocessedResult){
 }
   
 function preprocessing(searchResultsData) {
+
+    searchResultsData = removeDuplicates(searchResultsData);
+
     searchResultsData.forEach(result =>{
         preprocessedResult = clearText(result.snippet);
         preprocessedResult = removeStopwords(preprocessedResult);
