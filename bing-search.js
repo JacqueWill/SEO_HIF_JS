@@ -213,4 +213,3 @@ function updatePagination() {
   console.log("Pagination Updated for page",currentPage)
 }
 
-

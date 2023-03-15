@@ -15,6 +15,7 @@ self.addEventListener("message", function (event) {
   model = event.data[0];
   testData = event.data[1];
 
+  // console.log(testData)
 
   // Compute cosine similarity scores between test vector and all vectors in the corpus
   testData = testData.map(obj =>{
