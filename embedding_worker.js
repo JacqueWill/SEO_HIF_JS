@@ -15,6 +15,7 @@ function tf_idfVectorizer(corpus, searchResultsData){
             result.vectors.push(tfidf(corpus, text));
         })
     })
+    return searchResultsData;
 }
 
 
@@ -25,4 +26,5 @@ self.addEventListener('message', event => {
     const vectorizedData = tf_idfVectorizer(corpus, searchResultsData);
     // Send the vectorized data back to the main script
     self.postMessage(vectorizedData);
+    
 });

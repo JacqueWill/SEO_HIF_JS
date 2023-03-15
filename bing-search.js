@@ -22,6 +22,7 @@ let clickedUrls = [];
 // let corpus = [];
 let trainData = [];
 let testData = [];
+var model;
 
 // Event listener for search form submit
 searchForm.addEventListener('submit', event => {
@@ -33,22 +34,47 @@ searchForm.addEventListener('submit', event => {
   searchBingApi(searchTerm);
 });
 
+// Create worker for preprocessing the data
 let preprocessing_worker = new Worker('preprocessing_worker.js');
+
+// Create worker for word embedding
 let embedding_worker = new Worker('embedding_worker.js');
 
+// Create worker for training linear regression model
+let trainWorker = new Worker('train_LR_worker.js');
+
+// Create worker for computing similarity scores
+let scoreWorker = new Worker('predict_LR_worker.js');
+
 preprocessing_worker.addEventListener('message', event => {
-  searchResultsData = event.data;
-  displaySearchResults();
-  console.log('Preprocessing Worker acheived')
+  searchResultsData = event.data[0];
+  corpus = event.data[1];
+  console.log('Preprocessing Worker acheived');
   embedding_worker.postMessage([searchResultsData,corpus]);
 });
 
 embedding_worker.addEventListener('message', event => {
   searchResultsData = event.data;
-  console.log('Embedding Worker acheived')
+  console.log('Embedding Worker acheived');
+  const startIndex = (currentPage - 1) * 10;
+  const endIndex = startIndex + 10;
+  testData = searchResultsData.slice(endIndex,);
+  // console.log(searchResultsData)
 });
 
+trainWorker.addEventListener('message', event=> {
+  model = event.data;
+  console.log('Model Trained');
+  scoreWorker.postMessage([model,testData]);
+});
 
+scoreWorker.addEventListener('message', event => {
+  testData = event.data;
+  console.log(testData);
+  testData.sort((a, b) => b.score - a.score);
+  displaySearchResults();
+  updatePagination();
+})
 // Function to search Bing API
 function searchBingApi(searchTerm) {
 
@@ -118,16 +144,10 @@ nextPageButton.addEventListener('click', () => {
   }else{
     console.log("Updating ranks")
     // Retrain your model and rerank the results
-    displaySearchResults();
-    updatePagination();
+    trainWorker.postMessage([trainData]);
 
-    // Compute similarity scores for test data
-    for (let i = 0; i < testData.length; i++) {
-    testData[i].score = linearRegression(trainData);
-    }
     // Sort test data based on similarity scores
     testData.sort((a, b) => b.score - a.score);
-
   }
 });
 
@@ -162,7 +182,6 @@ function displaySearchResults() {
   hyperlinks.forEach(hyperlink => {
     hyperlink.addEventListener('click', () => {
       const clickedUrl = hyperlink.href;
-
       // Adding number of clicks to the data
       searchResultsData = searchResultsData.map(obj =>{
         if(obj.url == clickedUrl){
@@ -194,105 +213,5 @@ function updatePagination() {
   }
   console.log("Pagination Updated for page",currentPage)
 }
-
-
-// function clearText(text) {
-//   return text
-//     .toLowerCase()
-//     .replace(/[^A-Za-zА-Яа-яЁёЇїІіҐґЄє0-9\-]|\s]/g, " ")
-//     .replace(/\s{2,}/g, " ");
-// }
-
-// function removeStopwords(text){
-//   res = []
-//     words = text.split(' ')
-//     for(let i=0;i<words.length;i++) {
-//        word_clean = words[i].split(".").join("")
-//        if(!stopwords.includes(word_clean)) {
-//            res.push(word_clean)
-//        }
-//     }
-//     return(res.join(' '))
-// }
-
-// function tokenizer(text){
-//   return text.split(/\W+/);
-// }
-
-// function preprocessing(searchResultsData) {
-//   searchResultsData.forEach(result =>{
-//     preprocessedResult = clearText(result.snippet);
-//     preprocessedResult = removeStopwords(preprocessedResult);
-//     preprocessedResult = tokenizer(preprocessedResult);
-//     result.preprocessedResults = preprocessedResult
-//     result.vectors = [];
-//     result.clicks = 0;
-//     corpus.push(preprocessedResult);
-//   })
-  
-//   console.log("Preprocessed text snippets");
-// }
-
-function tfidf(corpus, term) {
-  // Compute the term frequency (TF) and inverse document frequency (IDF) for the given term in each document
-  const tfidfScores = corpus.map((doc) => {
-    const tf = doc.filter((word) => word === term).length / doc.length;
-    const idf = Math.log(corpus.length / corpus.filter((doc) => doc.includes(term)).length);
-    return tf * idf;
-  });
-  
-  // Return the TF-IDF score for the term across all documents
-  return tfidfScores.reduce((sum, score) => sum + score, 0) / tfidfScores.length;
-}
-
-function tf_idfVectorizer(corpus, searchResultsData){
-  searchResultsData.forEach(result =>{
-    result.preprocessedResults.forEach(text =>{
-      result.vectors.push(tfidf(corpus, text));
-    })
-  })
-}
-
-function cosineSimilarity(v1, v2) {
-  let dotProduct = 0;
-  let v1Magnitude = 0;
-  let v2Magnitude = 0;
-  
-  for (let i = 0; i < v1.length; i++) {
-    dotProduct += v1[i] * v2[i];
-    v1Magnitude += v1[i] * v1[i];
-    v2Magnitude += v2[i] * v2[i];
-  }
-  
-  v1Magnitude = Math.sqrt(v1Magnitude);
-  v2Magnitude = Math.sqrt(v2Magnitude);
-  
-  return dotProduct / (v1Magnitude * v2Magnitude);
-}
-
-
-// Define a function for computing linear regression
-function linearRegression(trainData) {
-  let xSum = 0;
-  let ySum = 0;
-  let xySum = 0;
-  let xSquareSum = 0;
-  let n = trainData.length;
-  
-  for (let i = 0; i < n; i++) {
-    xSum += trainData[i].clicks;
-    ySum += cosineSimilarity(trainData[i].vectors, testData[0].vectors);
-    xySum += trainData[i].clicks * cosineSimilarity(trainData[i].vectors, testData[0].vectors);
-    xSquareSum += trainData[i].clicks * trainData[i].clicks;
-  }
-  
-  let slope = (n * xySum - xSum * ySum) / (n * xSquareSum - xSum * xSum);
-  let intercept = (ySum - slope * xSum) / n;
-  
-  return slope * testData[0].clicks + intercept;
-}
-
-
-
 
 
