@@ -50,7 +50,7 @@ preprocessing_worker.addEventListener('message', event => {
   searchResultsData = event.data[0];
   corpus = event.data[1];
   console.log('Preprocessing Worker acheived');
-  embedding_worker.postMessage([searchResultsData,corpus]);
+  embedding_worker.postMessage([corpus,searchResultsData]);
 });
 
 embedding_worker.addEventListener('message', event => {
