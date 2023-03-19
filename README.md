@@ -14,6 +14,3 @@ In the future, the SEO_HIF_JS tool aims to include additional implicit feedback 
 
 If you are interested in contributing to the development of SEO_HIF_JS, please feel free to submit pull requests or open issues on the project's GitHub repository.
 
-## License
-
-SEO_HIF_JS is licensed under the MIT License. See the `LICENSE` file in the repository for more information.
