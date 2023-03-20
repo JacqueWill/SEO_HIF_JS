@@ -7,7 +7,7 @@ function trainLinearRegressionModel(trainData) {
 
   // Set learning rate and number of iterations
   const learningRate = 0.08;
-  const numIterations = 1000;
+  const numIterations = 2;
 
   // Perform gradient descent
   for (let i = 0; i < numIterations; i++) {

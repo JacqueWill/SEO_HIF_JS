@@ -1,5 +1,6 @@
 // Declare and initialize constants
-const apiKey = "dc46558a883b422497f8e35b4098f5da";
+// const apiKey = "dc46558a883b422497f8e35b4098f5da"; // Nisarga Azure API
+const apiKey = "3ec3c824525f42bdacd1914aec0802b5"; // Raghu Azure API
 const searchForm = document.querySelector('#search-form');
 const searchResults = document.querySelector('#search-results');
 const pagination = document.querySelector('#pagination');
@@ -18,8 +19,7 @@ let resultsToDisplay = [];
 let newSearchResultsData =[];
 let previousTotalResults = 0;
 let clickedUrls = [];
-// let stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','your','yours','yourself','yourselves','he','him','his','himself','she','her','hers','herself','it','its','itself','they','them','their','theirs','themselves','what','which','who','whom','this','that','these','those','am','is','are','was','were','be','been','being','have','has','had','having','do','does','did','doing','a','an','the','and','but','if','or','because','as','until','while','of','at','by','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','then','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now'];
-// let corpus = [];
+let freqMap = new Map();
 let trainData = [];
 let testData = [];
 var model;
@@ -49,8 +49,9 @@ let scoreWorker = new Worker('predict_LR_worker.js');
 preprocessing_worker.addEventListener('message', event => {
   searchResultsData = event.data[0];
   corpus = event.data[1];
+  freqMap = event.data[2];
   console.log('Preprocessing Worker acheived');
-  embedding_worker.postMessage([corpus,searchResultsData]);
+  embedding_worker.postMessage([freqMap,searchResultsData]);
 });
 
 embedding_worker.addEventListener('message', event => {
@@ -65,10 +66,13 @@ embedding_worker.addEventListener('message', event => {
 trainWorker.addEventListener('message', event=> {
   model = event.data;
   console.log('Model Trained');
+  console.log(model);
   scoreWorker.postMessage([model,testData]);
 });
 
 scoreWorker.addEventListener('message', event => {
+  console.log("Reranked results");
+
   testData = event.data;
   
   displaySearchResults();
@@ -99,14 +103,14 @@ function searchBingApi(searchTerm) {
     previousTotalResults = previousTotalResults + totalResults;
     newSearchResultsData = data.webPages.value;
     searchResultsData = searchResultsData.concat(newSearchResultsData);
-
-    if(previousTotalResults>=50){
+    
+    if(previousTotalResults>=110){
       // Display search results for first page
       displaySearchResults();
       // Update pagination
       updatePagination();
-      
-      preprocessing_worker.postMessage(searchResultsData);
+
+      preprocessing_worker.postMessage([searchResultsData,freqMap]);
 
     }else{
       searchBingApi(searchForm.elements['search-term'].value);

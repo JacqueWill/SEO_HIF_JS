@@ -1,30 +1,27 @@
-function tfidf(corpus, term) {
-    // Compute the term frequency (TF) and inverse document frequency (IDF) for the given term in each document
-    const tfidfScores = corpus.map((doc) => {
-        const tf = doc.filter((word) => word === term).length / doc.length;
-        const idf = Math.log(corpus.length / corpus.filter((doc) => doc.includes(term)).length);
-        return tf * idf;
-    });
-    // Return the TF-IDF score for the term across all documents
-    return tfidfScores.reduce((sum, score) => sum + score, 0) / tfidfScores.length;
-}
+const maxLength = 400;
 
-function tf_idfVectorizer(corpus, searchResultsData){
-    searchResultsData.forEach(result =>{
-        result.preprocessedResults.forEach(text =>{
-            result.vectors.push(tfidf(corpus, text));
+
+function embed_freq(freqMap, searchResultsData){
+    searchResultsData.forEach(results =>{
+        results.preprocessedResults.forEach(word =>{
+            results.vectors.push(freqMap.get(word));
         })
+        results.vectors = padding(results.vectors);
     })
     return searchResultsData;
 }
 
+function padding(vectors){
+    const paddingLength = maxLength - vectors.length;
+    return vectors.concat(new Array(paddingLength).fill(0));
+}
 
 self.addEventListener('message', event => {
-    const searchResultsData = event.data[0];
-    const corpus = event.data[1];
+    const searchResultsData = event.data[1];
+    const freqMap = event.data[0];
     // Perform preprocessing and vectorization
-    const vectorizedData = tf_idfVectorizer(corpus, searchResultsData);
+    const vectorizedData = embed_freq(freqMap, searchResultsData);
     // Send the vectorized data back to the main script
+    // console.log(vectorizedData);
     self.postMessage(vectorizedData);
-    
 });

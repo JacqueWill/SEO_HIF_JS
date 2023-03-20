@@ -24,7 +24,7 @@ self.addEventListener("message", function (event) {
     })
 
 
-  testData = testData.sort((a, b) => b.score - a.score);
+  testData = testData.sort((a, b) => a.score - b.score);
 
   // Send the similarity scores back to the main thread
   self.postMessage(testData);

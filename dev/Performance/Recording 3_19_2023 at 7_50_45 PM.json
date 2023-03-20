@@ -1,0 +1,342 @@
+{
+    "title": "Recording 3/19/2023 at 7:50:45 PM",
+    "steps": [
+        {
+            "type": "setViewport",
+            "width": 816,
+            "height": 961,
+            "deviceScaleFactor": 1,
+            "isMobile": false,
+            "hasTouch": false,
+            "isLandscape": false
+        },
+        {
+            "type": "navigate",
+            "url": "http://127.0.0.1:5500/SEO_HIF_JS/dev/api_dev.html",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://127.0.0.1:5500/SEO_HIF_JS/dev/api_dev.html",
+                    "title": "SEO_HIF dev page"
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "body"
+                ],
+                [
+                    "xpath//html/body"
+                ]
+            ],
+            "offsetY": 34,
+            "offsetX": 215
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Search:"
+                ],
+                [
+                    "#search-term"
+                ],
+                [
+                    "xpath///*[@id=\"search-term\"]"
+                ]
+            ],
+            "offsetY": 19,
+            "offsetX": 54.40625
+        },
+        {
+            "type": "change",
+            "value": "The Office",
+            "selectors": [
+                [
+                    "aria/Search:"
+                ],
+                [
+                    "#search-term"
+                ],
+                [
+                    "xpath///*[@id=\"search-term\"]"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Search"
+                ],
+                [
+                    "#search-form > input[type=submit]:nth-child(3)"
+                ],
+                [
+                    "xpath///*[@id=\"search-form\"]/input[2]"
+                ]
+            ],
+            "offsetY": 14,
+            "offsetX": 11.953125
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/A fault tolerant control architecture for automated highway systems[role=\"link\"]"
+                ],
+                [
+                    "#search-results > article:nth-child(2) > h2 > a"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]/article[2]/h2/a"
+                ]
+            ],
+            "offsetY": 16,
+            "offsetX": 246
+        },
+        {
+            "type": "keyUp",
+            "key": "w",
+            "target": "main"
+        },
+        {
+            "type": "keyUp",
+            "key": "Control",
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Fault tolerant memory design for HW/SW co-reliability in massively parallel computing systems[role=\"link\"]"
+                ],
+                [
+                    "#search-results > article:nth-child(3) > h2 > a"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]/article[3]/h2/a"
+                ]
+            ],
+            "offsetY": 10,
+            "offsetX": 242
+        },
+        {
+            "type": "keyUp",
+            "key": "w",
+            "target": "main"
+        },
+        {
+            "type": "keyUp",
+            "key": "Control",
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Fault tolerant memory design for HW/SW co-reliability in massively parallel computing systems[role=\"link\"]"
+                ],
+                [
+                    "#search-results > article:nth-child(3) > h2 > a"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]/article[3]/h2/a"
+                ]
+            ],
+            "offsetY": 19,
+            "offsetX": 185
+        },
+        {
+            "type": "keyUp",
+            "key": "Control",
+            "target": "main"
+        },
+        {
+            "type": "keyUp",
+            "key": "w",
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/A fault tolerant control architecture for automated highway systems[role=\"link\"]"
+                ],
+                [
+                    "#search-results > article:nth-child(2) > h2 > a"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]/article[2]/h2/a"
+                ]
+            ],
+            "offsetY": 20,
+            "offsetX": 208
+        },
+        {
+            "type": "keyUp",
+            "key": "w",
+            "target": "main"
+        },
+        {
+            "type": "keyUp",
+            "key": "Control",
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Update"
+                ],
+                [
+                    "#next-page"
+                ],
+                [
+                    "xpath///*[@id=\"next-page\"]"
+                ],
+                [
+                    "text/Update"
+                ]
+            ],
+            "offsetY": 20,
+            "offsetX": 39.6875
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Update"
+                ],
+                [
+                    "#next-page"
+                ],
+                [
+                    "xpath///*[@id=\"next-page\"]"
+                ],
+                [
+                    "text/Update"
+                ]
+            ],
+            "offsetY": 17,
+            "offsetX": 18.6875
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Previous"
+                ],
+                [
+                    "#prev-page"
+                ],
+                [
+                    "xpath///*[@id=\"prev-page\"]"
+                ]
+            ],
+            "offsetY": 19.8125,
+            "offsetX": 17.3125
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/New fault tolerant robotic central controller for space robot system based on ARM processor[role=\"link\"]"
+                ],
+                [
+                    "#search-results > article:nth-child(4) > h2 > a"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]/article[4]/h2/a"
+                ]
+            ],
+            "offsetY": 16,
+            "offsetX": 198
+        },
+        {
+            "type": "keyUp",
+            "key": "w",
+            "target": "main"
+        },
+        {
+            "type": "keyUp",
+            "key": "Control",
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "#search-results"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]"
+                ]
+            ],
+            "offsetY": 895,
+            "offsetX": 278
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/A new approach to fault-tolerant wormhole routing for mesh-connected parallel computers[role=\"link\"]"
+                ],
+                [
+                    "#search-results > article:nth-child(6) > h2 > a"
+                ],
+                [
+                    "xpath///*[@id=\"search-results\"]/article[6]/h2/a"
+                ]
+            ],
+            "offsetY": 12,
+            "offsetX": 281
+        },
+        {
+            "type": "keyUp",
+            "key": "Control",
+            "target": "main"
+        },
+        {
+            "type": "keyUp",
+            "key": "w",
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Update"
+                ],
+                [
+                    "#next-page"
+                ],
+                [
+                    "xpath///*[@id=\"next-page\"]"
+                ],
+                [
+                    "text/Update"
+                ]
+            ],
+            "offsetY": 21,
+            "offsetX": 22.6875
+        }
+    ]
+}
