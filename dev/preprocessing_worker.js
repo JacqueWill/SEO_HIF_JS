@@ -46,6 +46,12 @@ function create_freqMap(preprocessedResult){
     return freqMap;
 }
   
+function sort_tokens(preprocessedResult){
+    preprocessedResult.sort();
+    return preprocessedResult;
+}
+
+
 function preprocessing(searchResultsData) {
 
     searchResultsData = removeDuplicates(searchResultsData);
@@ -54,6 +60,7 @@ function preprocessing(searchResultsData) {
         preprocessedResult = clearText(result.snippet);
         preprocessedResult = removeStopwords(preprocessedResult);
         preprocessedResult = tokenizer(preprocessedResult);
+        // preprocessedResult = sort_tokens(preprocessedResult)
         result.preprocessedResults = preprocessedResult;
         result.vectors = [];
         result.clicks = 0;

@@ -1,5 +1,6 @@
 // Declare and initialize constants
-
+// const apiKey = "dc46558a883b422497f8e35b4098f5da"; // Nisarga Azure API
+const apiKey = "3ec3c824525f42bdacd1914aec0802b5"; // Raghu Azure API
 const searchForm = document.querySelector('#search-form');
 const searchResults = document.querySelector('#search-results');
 const pagination = document.querySelector('#pagination');
@@ -103,7 +104,7 @@ function searchBingApi(searchTerm) {
     newSearchResultsData = data.webPages.value;
     searchResultsData = searchResultsData.concat(newSearchResultsData);
     
-    if(previousTotalResults>=110){
+    if(previousTotalResults>=100){
       // Display search results for first page
       displaySearchResults();
       // Update pagination
